@@ -1,0 +1,241 @@
+import { useState } from "react";
+import {
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
+} from "recharts";
+
+const monthlyRevenue = [
+  { month: "Jan", revenue: 4200000, units: 142 },
+  { month: "Feb", revenue: 3800000, units: 128 },
+  { month: "Mar", revenue: 5100000, units: 171 },
+  { month: "Apr", revenue: 4700000, units: 158 },
+  { month: "May", revenue: 5600000, units: 189 },
+  { month: "Jun", revenue: 6200000, units: 208 },
+  { month: "Jul", revenue: 5900000, units: 198 },
+  { month: "Aug", revenue: 6800000, units: 229 },
+  { month: "Sep", revenue: 7100000, units: 238 },
+  { month: "Oct", revenue: 6500000, units: 218 },
+  { month: "Nov", revenue: 7400000, units: 249 },
+  { month: "Dec", revenue: 8200000, units: 276 },
+];
+
+const regionalData = [
+  { region: "Hyderabad", revenue: 18500000, units: 622, avg: 29743 },
+  { region: "Bengaluru", revenue: 15200000, units: 511, avg: 29746 },
+  { region: "Chennai", revenue: 12800000, units: 430, avg: 29767 },
+  { region: "Mumbai", revenue: 14100000, units: 474, avg: 29747 },
+  { region: "Delhi", revenue: 11900000, units: 400, avg: 29750 },
+];
+
+const dealerData = [
+  { dealer: "AutoPeak Motors", units: 312, revenue: 9300000, rating: 4.8 },
+  { dealer: "DriveZone", units: 287, revenue: 8550000, rating: 4.6 },
+  { dealer: "CarNation", units: 256, revenue: 7620000, rating: 4.5 },
+  { dealer: "SpeedHouse", units: 231, revenue: 6890000, rating: 4.3 },
+  { dealer: "PrimeWheels", units: 198, revenue: 5900000, rating: 4.7 },
+];
+
+const segmentData = [
+  { name: "SUV", value: 38, color: "#f59e0b" },
+  { name: "Sedan", value: 27, color: "#3b82f6" },
+  { name: "Hatchback", value: 21, color: "#10b981" },
+  { name: "Luxury", value: 9, color: "#8b5cf6" },
+  { name: "EV", value: 5, color: "#ef4444" },
+];
+
+const fmt = (n) =>
+  n >= 10000000
+    ? `₹${(n / 10000000).toFixed(1)}Cr`
+    : n >= 100000
+    ? `₹${(n / 100000).toFixed(1)}L`
+    : `₹${n.toLocaleString()}`;
+
+const KPICard = ({ label, value, sub, color }) => (
+  <div style={{
+    background: "#0f172a",
+    border: `1px solid ${color}33`,
+    borderTop: `3px solid ${color}`,
+    borderRadius: 8,
+    padding: "20px 24px",
+    flex: 1,
+    minWidth: 160,
+  }}>
+    <div style={{ fontSize: 11, color: "#94a3b8", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+    <div style={{ fontSize: 28, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>{value}</div>
+    {sub && <div style={{ fontSize: 12, color: color, marginTop: 4 }}>{sub}</div>}
+  </div>
+);
+
+const SectionTitle = ({ children }) => (
+  <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+    <div style={{ width: 20, height: 2, background: "#f59e0b" }} />
+    {children}
+  </div>
+);
+
+export default function Dashboard() {
+  const [activeRegion, setActiveRegion] = useState(null);
+  const totalRevenue = monthlyRevenue.reduce((s, m) => s + m.revenue, 0);
+  const totalUnits = monthlyRevenue.reduce((s, m) => s + m.units, 0);
+  const avgPrice = Math.round(totalRevenue / totalUnits);
+  const bestMonth = monthlyRevenue.reduce((a, b) => a.revenue > b.revenue ? a : b);
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#020617",
+      color: "#f1f5f9",
+      fontFamily: "'DM Sans', sans-serif",
+      padding: "0 0 40px 0",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+        borderBottom: "1px solid #1e293b",
+        padding: "24px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div>
+          <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>Mohammed Masoom Baba · Portfolio Project</div>
+          <div style={{ fontSize: 32, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, color: "#f1f5f9" }}>
+            Car Sales Performance Dashboard
+          </div>
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>FY 2024–25 · All India · Power BI · SQL · DAX</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 11, color: "#64748b" }}>Last Updated</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Dec 2024</div>
+        </div>
+      </div>
+
+      <div style={{ padding: "28px 32px" }}>
+
+        {/* KPI Row */}
+        <div style={{ display: "flex", gap: 16, marginBottom: 32, flexWrap: "wrap" }}>
+          <KPICard label="Total Revenue" value={fmt(totalRevenue)} sub="▲ 18.4% YoY" color="#f59e0b" />
+          <KPICard label="Units Sold" value={totalUnits.toLocaleString()} sub="▲ 12.1% YoY" color="#3b82f6" />
+          <KPICard label="Avg Selling Price" value={fmt(avgPrice)} sub="▲ 5.6% YoY" color="#10b981" />
+          <KPICard label="Best Month" value={bestMonth.month} sub={`${fmt(bestMonth.revenue)} revenue`} color="#8b5cf6" />
+          <KPICard label="Active Dealers" value="47" sub="Across 5 regions" color="#ef4444" />
+        </div>
+
+        {/* Revenue & Units Chart */}
+        <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 24, marginBottom: 24 }}>
+          <SectionTitle>Monthly Revenue & Units Sold</SectionTitle>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={monthlyRevenue} barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="left" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+                formatter={(val, name) => [name === "revenue" ? fmt(val) : val, name === "revenue" ? "Revenue" : "Units"]}
+              />
+              <Bar yAxisId="left" dataKey="revenue" fill="#f59e0b" radius={[4, 4, 0, 0]} opacity={0.9} />
+              <Bar yAxisId="right" dataKey="units" fill="#3b82f6" radius={[4, 4, 0, 0]} opacity={0.7} />
+              <Legend formatter={v => v === "revenue" ? "Revenue (₹)" : "Units Sold"} wrapperStyle={{ fontSize: 12, color: "#94a3b8" }} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={{ display: "flex", gap: 24, marginBottom: 24, flexWrap: "wrap" }}>
+
+          {/* Regional Performance */}
+          <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 24, flex: 2, minWidth: 280 }}>
+            <SectionTitle>Regional Performance</SectionTitle>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={regionalData} layout="vertical" barSize={14}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+                <YAxis type="category" dataKey="region" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+                  formatter={(val) => [fmt(val), "Revenue"]}
+                />
+                <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+                  {regionalData.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "#f59e0b" : "#3b82f6"} opacity={0.85} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Segment Mix */}
+          <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 24, flex: 1, minWidth: 220 }}>
+            <SectionTitle>Segment Mix</SectionTitle>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={segmentData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+                  {segmentData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+                  formatter={(val) => [`${val}%`, "Share"]}
+                />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Dealer Table */}
+        <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 24, marginBottom: 24 }}>
+          <SectionTitle>Top Dealer Performance</SectionTitle>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid #1e293b" }}>
+                {["Dealer", "Units Sold", "Revenue", "Avg Price", "Rating"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "8px 12px", color: "#64748b", fontWeight: 600, fontSize: 11, letterSpacing: 1, textTransform: "uppercase" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {dealerData.map((d, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid #0f172a", background: i % 2 === 0 ? "#0f172a" : "#111827" }}>
+                  <td style={{ padding: "12px 12px", fontWeight: 600, color: "#f1f5f9" }}>{d.dealer}</td>
+                  <td style={{ padding: "12px 12px", color: "#3b82f6", fontWeight: 700 }}>{d.units}</td>
+                  <td style={{ padding: "12px 12px", color: "#f59e0b", fontWeight: 700 }}>{fmt(d.revenue)}</td>
+                  <td style={{ padding: "12px 12px", color: "#94a3b8" }}>{fmt(Math.round(d.revenue / d.units))}</td>
+                  <td style={{ padding: "12px 12px" }}>
+                    <span style={{ background: "#052e16", color: "#10b981", padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>⭐ {d.rating}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Revenue Trend Line */}
+        <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 24 }}>
+          <SectionTitle>Revenue Trend (Full Year)</SectionTitle>
+          <ResponsiveContainer width="100%" height={180}>
+            <LineChart data={monthlyRevenue}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => fmt(v)} />
+              <Tooltip
+                contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+                formatter={(val) => [fmt(val), "Revenue"]}
+              />
+              <Line type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: "#f59e0b", r: 4 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Footer */}
+        <div style={{ marginTop: 28, padding: "16px 0", borderTop: "1px solid #1e293b", display: "flex", justifyContent: "space-between", fontSize: 12, color: "#475569" }}>
+          <span>Built by Mohammed Masoom Baba · Data Analyst · Python · SQL · Power BI · Tableau</span>
+          <span>mdmasoomcse@gmail.com · linkedin.com/in/md-masoombaba</span>
+        </div>
+      </div>
+    </div>
+  );
+}
